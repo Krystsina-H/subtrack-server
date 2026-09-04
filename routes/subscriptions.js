@@ -14,6 +14,7 @@ const {
 const {
   createSubscriptionValidators,
   updateSubscriptionValidators,
+  subscriptionIdValidator,
 } = require('../utils/validators');
 const validate = require('../middleware/validate');
 
@@ -85,7 +86,7 @@ router.post('/', createSubscriptionValidators, validate, createSubscription);
  *       404:
  *         description: Подписка не найдена
  */
-router.get('/:id', getSubscription);
+router.get('/:id', subscriptionIdValidator, validate, getSubscription);
 
 /**
  * @openapi
@@ -111,7 +112,7 @@ router.get('/:id', getSubscription);
  *       404:
  *         description: Подписка не найдена
  */
-router.put('/:id', updateSubscriptionValidators, validate, updateSubscription);
+router.put('/:id', subscriptionIdValidator, updateSubscriptionValidators, validate, updateSubscription);
 
 /**
  * @openapi
@@ -131,7 +132,7 @@ router.put('/:id', updateSubscriptionValidators, validate, updateSubscription);
  *       404:
  *         description: Подписка не найдена
  */
-router.delete('/:id', deleteSubscription);
+router.delete('/:id', subscriptionIdValidator, validate, deleteSubscription);
 
 /**
  * @openapi
@@ -151,7 +152,7 @@ router.delete('/:id', deleteSubscription);
  *       400:
  *         description: Подписка уже приостановлена или отменена
  */
-router.patch('/:id/pause', pauseSubscription);
+router.patch('/:id/pause', subscriptionIdValidator, validate, pauseSubscription);
 
 /**
  * @openapi
@@ -171,7 +172,7 @@ router.patch('/:id/pause', pauseSubscription);
  *       400:
  *         description: Подписка уже отменена
  */
-router.patch('/:id/cancel', cancelSubscription);
+router.patch('/:id/cancel', subscriptionIdValidator, validate, cancelSubscription);
 
 /**
  * @openapi
@@ -191,6 +192,6 @@ router.patch('/:id/cancel', cancelSubscription);
  *       400:
  *         description: Подписка уже активна
  */
-router.patch('/:id/resume', resumeSubscription);
+router.patch('/:id/resume', subscriptionIdValidator, validate, resumeSubscription);
 
 module.exports = router;

@@ -13,10 +13,24 @@ const paymentRoutes = require('./routes/payments');
 const userRoutes = require('./routes/user');
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET must be configured');
+  process.exit(1);
+}
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin is not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 // Swagger

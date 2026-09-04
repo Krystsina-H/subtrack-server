@@ -7,7 +7,11 @@ const {
   getYearlySummary,
   updatePaymentStatus,
 } = require('../controllers/paymentController');
-const { updatePaymentStatusValidators } = require('../utils/validators');
+const {
+  updatePaymentStatusValidators,
+  paymentQueryValidators,
+  paymentIdValidator,
+} = require('../utils/validators');
 const validate = require('../middleware/validate');
 
 router.use(auth);
@@ -60,7 +64,7 @@ router.use(auth);
  *                       count:
  *                         type: integer
  */
-router.get('/monthly-summary', getMonthlySummary);
+router.get('/monthly-summary', paymentQueryValidators, validate, getMonthlySummary);
 
 /**
  * @openapi
@@ -112,7 +116,7 @@ router.get('/monthly-summary', getMonthlySummary);
  *                       count:
  *                         type: integer
  */
-router.get('/yearly-summary', getYearlySummary);
+router.get('/yearly-summary', paymentQueryValidators, validate, getYearlySummary);
 
 /**
  * @openapi
@@ -151,7 +155,7 @@ router.get('/yearly-summary', getYearlySummary);
  *       200:
  *         description: Список платежей
  */
-router.get('/', getPayments);
+router.get('/', paymentQueryValidators, validate, getPayments);
 
 /**
  * @openapi
@@ -182,6 +186,7 @@ router.get('/', getPayments);
  */
 router.patch(
   '/:id/status',
+  paymentIdValidator,
   updatePaymentStatusValidators,
   validate,
   updatePaymentStatus,

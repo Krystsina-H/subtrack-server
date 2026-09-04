@@ -2,27 +2,18 @@ const PaymentHistory = require('../models/PaymentHistory');
 const Subscription = require('../models/Subscription');
 
 /**
- * Mark all scheduled payments with date <= now as paid.
- * Called on server startup and periodically.
+ * Do not infer a successful payment from its due date. A payment can be
+ * explicitly marked as paid by the user; overdue scheduled payments stay
+ * visible until then.
  */
 async function autoMarkPaid() {
-  try {
-    const now = new Date();
-    const result = await PaymentHistory.updateMany(
-      { status: 'scheduled', date: { $lte: now } },
-      { $set: { status: 'paid' } }
-    );
-    if (result.modifiedCount > 0) {
-      console.log(`[AutoPay] ${result.modifiedCount} payment(s) marked as paid`);
-    }
-  } catch (err) {
-    console.error('[AutoPay] Error:', err.message);
-  }
+  return { modifiedCount: 0 };
 }
 
 /**
  * Update nextPaymentDate for all active subscriptions
- * to the earliest scheduled (or future) payment.
+ * to the earliest scheduled payment, including an overdue one. This keeps a
+ * missed payment actionable instead of silently moving the next due date.
  */
 async function syncNextPaymentDates() {
   try {
@@ -31,7 +22,6 @@ async function syncNextPaymentDates() {
       const nextPayment = await PaymentHistory.findOne({
         subscription: sub._id,
         status: 'scheduled',
-        date: { $gte: new Date() },
       }).sort({ date: 1 });
 
       if (nextPayment) {
@@ -51,15 +41,16 @@ async function syncNextPaymentDates() {
 }
 
 /**
- * Run both tasks and schedule them every hour.
+ * Synchronize due dates on startup and every hour. Payment status is never
+ * changed automatically.
  */
 function startAutoPayJob() {
   // Run immediately on startup
-  autoMarkPaid().then(() => syncNextPaymentDates());
+  syncNextPaymentDates();
 
   // Run every hour
   setInterval(() => {
-    autoMarkPaid().then(() => syncNextPaymentDates());
+    syncNextPaymentDates();
   }, 60 * 60 * 1000);
 }
 

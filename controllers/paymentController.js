@@ -5,7 +5,17 @@ const mongoose = require('mongoose');
 // GET /api/payments — list user's payments with query filters
 exports.getPayments = async (req, res) => {
   try {
-    const { month, year, dateFrom, dateTo, status, category, subscriptionId } = req.query;
+    const {
+      month,
+      year,
+      dateFrom,
+      dateTo,
+      status,
+      category,
+      subscriptionId,
+      page = 1,
+      limit = 100,
+    } = req.query;
 
     const filter = { user: req.userId };
 
@@ -64,10 +74,18 @@ exports.getPayments = async (req, res) => {
       }
     }
 
-    const payments = await PaymentHistory.find(filter)
+    const [payments, total] = await Promise.all([
+      PaymentHistory.find(filter)
       .populate('subscription', 'serviceName category billingCycle')
-      .sort({ date: 1 });
+      .sort({ date: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+      PaymentHistory.countDocuments(filter),
+    ]);
 
+    res.set('X-Total-Count', String(total));
+    res.set('X-Page', String(page));
+    res.set('X-Page-Size', String(limit));
     res.json(payments);
   } catch (error) {
     res.status(500).json({ message: 'Server error fetching payments' });

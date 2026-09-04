@@ -35,5 +35,7 @@ const paymentHistorySchema = new mongoose.Schema({
 paymentHistorySchema.index({ user: 1, date: 1 });
 paymentHistorySchema.index({ subscription: 1 });
 paymentHistorySchema.index({ user: 1, status: 1 });
+paymentHistorySchema.index({ status: 1, date: 1 });
+paymentHistorySchema.index({ subscription: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('PaymentHistory', paymentHistorySchema);

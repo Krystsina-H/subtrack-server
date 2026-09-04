@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, query, param } = require('express-validator');
 
 const BILLING_CYCLES = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'custom'];
 const SUBSCRIPTION_STATUSES = ['active', 'paused', 'cancelled'];
@@ -116,6 +116,25 @@ exports.updatePaymentStatusValidators = [
   body('status')
     .isIn(PAYMENT_STATUSES)
     .withMessage('Invalid status. Must be one of: scheduled, paid, missed, cancelled'),
+];
+
+exports.paymentQueryValidators = [
+  query('month').optional().isInt({ min: 1, max: 12 }).withMessage('month must be between 1 and 12').toInt(),
+  query('year').optional().isInt({ min: 2000, max: 2100 }).withMessage('year must be between 2000 and 2100').toInt(),
+  query('dateFrom').optional().isISO8601().withMessage('dateFrom must be a valid date').toDate(),
+  query('dateTo').optional().isISO8601().withMessage('dateTo must be a valid date').toDate(),
+  query('status').optional().isIn(PAYMENT_STATUSES).withMessage('Invalid payment status'),
+  query('subscriptionId').optional().isMongoId().withMessage('Invalid subscription ID'),
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be at least 1').toInt(),
+  query('limit').optional().isInt({ min: 1, max: 200 }).withMessage('limit must be between 1 and 200').toInt(),
+];
+
+exports.subscriptionIdValidator = [
+  param('id').isMongoId().withMessage('Invalid subscription ID'),
+];
+
+exports.paymentIdValidator = [
+  param('id').isMongoId().withMessage('Invalid payment ID'),
 ];
 
 // PUT /api/user/profile
