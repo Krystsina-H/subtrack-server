@@ -42,6 +42,10 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
+app.get('/', (req, res) => {
+  res.redirect(302, process.env.FRONTEND_URL || 'https://statuesque-strudel-e3f2ff.netlify.app');
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
