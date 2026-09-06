@@ -23,6 +23,11 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+if (process.env.NODE_ENV === 'production' && !process.env.MONGODB_URI) {
+  console.error('MONGODB_URI must be configured in production');
+  process.exit(1);
+}
+
 // Middleware
 app.use(helmet());
 app.use(cors({
